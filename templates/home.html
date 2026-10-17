@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Career Mentor - Intelligent Resume Analysis & Guidance System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <span class="badge bg-indigo-500 text-uppercase tracking-wider px-3 py-2 rounded-pill mb-3" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                    <i class="fa-solid fa-sparkles me-1"></i> Autonomous Multi-Agent Career System
+                </span>
+                <h1 class="hero-title">
+                    Accelerate Your Career with <br>
+                    <span style="background: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI-Driven Intelligence</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Upload your resume, analyze your ATS score, discover missing skills for target roles, get custom job recommendations, and follow a personalized AI learning roadmap.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{% url 'register' %}" class="btn btn-primary-custom btn-lg">
+                        <i class="fa-solid fa-rocket me-2"></i> Get Started Free
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-secondary-custom btn-lg">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i> Log In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 fw-bold text-white mb-2">Everything You Need To Get Hired</h2>
+            <p class="text-secondary">Empowering job seekers with deep learning NLP & multi-agent career automation.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                        <i class="fa-solid fa-file-contract fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">ATS Resume Scoring</h3>
+                    <p class="text-secondary">Extract text from PDF resumes, score formatting, detect sections, and receive actionable suggestions to boost keyword relevance.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(6, 182, 212, 0.15); color: #38bdf8;">
+                        <i class="fa-solid fa-code-compare fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">Skill Gap Analysis</h3>
+                    <p class="text-secondary">Automatically compare existing skills extracted from your resume against target career requirements to identify high-priority missing skills.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                        <i class="fa-solid fa-bullseye fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">ML Job Recommender</h3>
+                    <p class="text-secondary">Utilize Scikit-learn TF-IDF & Cosine Similarity algorithms to match your profile against real job postings with precise match percentages.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+                        <i class="fa-solid fa-route fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">AI Learning Roadmap</h3>
+                    <p class="text-secondary">Generate structured monthly and weekly learning roadmaps tailored to your available hours, target career, and missing technical skills.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                        <i class="fa-solid fa-robot fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">AI Career Chatbot</h3>
+                    <p class="text-secondary">Interact with a context-aware career assistant that knows your resume, roadmap, and target role to deliver personalized interview prep.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card-glass p-4 h-100">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="fa-solid fa-users-gear fa-xl"></i>
+                    </div>
+                    <h3 class="h4 text-white">Multi-Agent System</h3>
+                    <p class="text-secondary">Powered by specialized Resume, Job, and Planner agents coordinated by a central Orchestrator for intelligent user guidance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 style="background: rgba(19, 27, 46, 0.3);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="h1 fw-bold text-white mb-2">How It Works</h2>
+            <p class="text-secondary">Four simple steps to transform your career trajectory.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="badge rounded-circle bg-primary fs-4 mb-3" style="width: 50px; height: 50px; line-height: 38px;">1</div>
+                    <h4 class="h5 text-white">Create Profile</h4>
+                    <p class="text-secondary small">Set your career goals, target roles, and education details.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="badge rounded-circle bg-info fs-4 mb-3" style="width: 50px; height: 50px; line-height: 38px;">2</div>
+                    <h4 class="h5 text-white">Upload Resume</h4>
+                    <p class="text-secondary small">Upload PDF resume for automatic NLP text parsing & scoring.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="badge rounded-circle bg-success fs-4 mb-3" style="width: 50px; height: 50px; line-height: 38px;">3</div>
+                    <h4 class="h5 text-white">Analyze Gaps & Jobs</h4>
+                    <p class="text-secondary small">Review missing skills & TF-IDF matched job recommendations.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <div class="badge rounded-circle bg-warning fs-4 mb-3" style="width: 50px; height: 50px; line-height: 38px;">4</div>
+                    <h4 class="h5 text-white">Follow AI Roadmap</h4>
+                    <p class="text-secondary small">Track progress and query your personal AI career agent.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5">
+    <div class="container">
+        <div class="card-glass p-5 text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);">
+            <h2 class="h1 fw-bold text-white mb-3">Ready to Upgrade Your Resume & Career?</h2>
+            <p class="text-secondary fs-5 max-w-2xl mx-auto mb-4">Join now to calculate your ATS score, discover missing skills, and build your personalized career roadmap.</p>
+            <a href="{% url 'register' %}" class="btn btn-primary-custom btn-lg">
+                <i class="fa-solid fa-user-plus me-2"></i> Create Account Now
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

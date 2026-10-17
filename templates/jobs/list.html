@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Recommended Jobs - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Title -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-bullseye text-teal-400 me-2" style="color: #38bdf8;"></i> Recommended Jobs & Career Matches
+            </h1>
+            <p class="text-secondary mb-0">ML-Powered job matching using TF-IDF text similarity and skill set compatibility.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-dark border border-secondary text-secondary p-2">
+                <i class="fa-solid fa-user-check me-1"></i> Target Goal: <strong class="text-white">{{ user.profile.target_role }}</strong>
+            </span>
+            <a href="{% url 'job_recommendations' %}?refresh=1" class="btn btn-primary-custom btn-sm" onclick="this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin me-1\'></i> Matching...';">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh Matches
+            </a>
+            <a href="{% url 'my_applications' %}" class="btn btn-secondary-custom btn-sm">
+                <i class="fa-solid fa-paper-plane me-1"></i> My Applications
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card-glass p-3 mb-4">
+        <form method="get" action="{% url 'job_recommendations' %}" class="row align-items-center g-2">
+            <div class="col-md-4">
+                <label class="form-label text-secondary small mb-1 fw-semibold">Filter by Experience Level</label>
+                <select name="experience" class="form-select form-select-custom" onchange="this.form.submit()">
+                    <option value="">All Experience Levels</option>
+                    <option value="Entry Level" {% if selected_exp == 'Entry Level' %}selected{% endif %}>Entry Level (0-2 yrs)</option>
+                    <option value="Mid Level" {% if selected_exp == 'Mid Level' %}selected{% endif %}>Mid Level (3-5 yrs)</option>
+                    <option value="Senior Level" {% if selected_exp == 'Senior Level' %}selected{% endif %}>Senior Level (5+ yrs)</option>
+                </select>
+            </div>
+            <div class="col-md-8 text-md-end mt-md-4">
+                <span class="text-secondary small">Showing {{ recommendations|length }} job match(es)</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Job Recommendation Cards Grid -->
+    <div class="row g-4">
+        {% for rec in recommendations %}
+        <div class="col-lg-6">
+            <div class="card-glass p-4 h-100 d-flex flex-column position-relative">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-indigo-500 text-uppercase small mb-2" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                            {{ rec.job.company }}
+                        </span>
+                        <h3 class="h4 text-white fw-bold mb-1">{{ rec.job.title }}</h3>
+                        <p class="text-secondary small mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-info"></i> {{ rec.job.location }} &bull; 
+                            <i class="fa-solid fa-sack-dollar me-1 text-success"></i> {{ rec.job.salary }}
+                        </p>
+                    </div>
+                    <!-- Match Percent Dial Badge -->
+                    <div class="text-center p-2 rounded-3" style="background: rgba(11, 15, 25, 0.8); border: 1px solid var(--border-color); min-width: 80px;">
+                        <span class="fs-3 fw-bold {% if rec.match_score >= 80 %}text-success{% elif rec.match_score >= 60 %}text-info{% else %}text-warning{% endif %}">
+                            {{ rec.match_score }}%
+                        </span>
+                        <span class="d-block text-secondary small" style="font-size: 0.7rem;">MATCH FIT</span>
+                    </div>
+                </div>
+
+                <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ rec.job.description }}
+                </p>
+
+                <!-- Matched & Missing Skills Summary -->
+                <div class="mb-3 pt-3 border-top border-secondary border-opacity-25">
+                    <div class="mb-2">
+                        <span class="text-success small fw-semibold me-2"><i class="fa-solid fa-check-double me-1"></i> Matched:</span>
+                        {% for s in rec.matched_skills|slice:":5" %}
+                            <span class="skill-badge skill-badge-existing">{{ s }}</span>
+                        {% empty %}
+                            <span class="text-secondary small">No direct skill matches found yet.</span>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        <span class="text-danger small fw-semibold me-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Missing:</span>
+                        {% for s in rec.missing_skills|slice:":5" %}
+                            <span class="skill-badge skill-badge-missing">{{ s }}</span>
+                        {% empty %}
+                            <span class="text-success small">All required skills present!</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mt-auto flex-wrap gap-2">
+                    <span class="badge bg-dark border border-secondary text-secondary">
+                        <i class="fa-solid fa-clock me-1"></i> {{ rec.job.employment_type }} &bull; {{ rec.job.experience_level }}
+                    </span>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if rec.job.id in applied_job_ids %}
+                            <span class="badge bg-success p-2 small"><i class="fa-solid fa-circle-check me-1"></i> Applied</span>
+                        {% endif %}
+                        <a href="{% url 'job_detail' rec.job.id %}" class="btn btn-primary-custom btn-sm">
+                            <i class="fa-solid fa-circle-info me-1"></i> Full Analysis & Apply
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="card-glass p-5">
+                <i class="fa-solid fa-briefcase text-secondary fa-3x mb-3"></i>
+                <h4 class="text-white">No Matching Jobs Found</h4>
+                <p class="text-secondary">Try clearing filters or updating your profile skills.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

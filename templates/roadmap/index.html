@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block title %}Personalized Learning Roadmap - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-route text-warning me-2" style="color: #f59e0b;"></i> Personalized Career Learning Roadmap
+            </h1>
+            <p class="text-secondary mb-0">Tailored curriculum to become a <strong class="text-white">{{ roadmap.target_role|default:user.profile.target_role }}</strong></p>
+        </div>
+        <div>
+            <button class="btn btn-secondary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#regenerateModal">
+                <i class="fa-solid fa-arrows-rotate me-1"></i> Customize &amp; Regenerate
+            </button>
+        </div>
+    </div>
+
+{% if roadmap %}
+    <!-- Progress Overview Card -->
+    <div class="card-glass p-4 mb-4">
+        <div class="row align-items-center g-4">
+            <div class="col-md-4 text-center border-end border-secondary border-opacity-25">
+                <h6 class="text-secondary text-uppercase tracking-wider small fw-semibold mb-1">Roadmap Completion</h6>
+                <div class="display-4 fw-extrabold text-indigo-400 mb-1" id="overallPctText" style="color: #818cf8;">
+                    {{ progress_pct }}%
+                </div>
+                <p class="text-secondary small mb-0">{{ completed_tasks }} of {{ total_tasks }} milestones completed</p>
+            </div>
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between text-secondary small fw-semibold mb-2">
+                    <span>Overall Learning Goal Progress</span>
+                    <span id="pctLabel">{{ progress_pct }}% Complete</span>
+                </div>
+                <div class="progress-custom mb-3" style="height: 14px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex; position: relative; width: 100%;">
+                    <div class="progress-bar-custom" id="mainProgressBar" style="width: {{ progress_pct }}%; height: 100%; min-height: 14px; background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%); border-radius: 9999px; box-shadow: 0 0 12px rgba(99, 102, 241, 0.5); transition: width 0.6s ease;"></div>
+                </div>
+
+                <div class="d-flex gap-4 flex-wrap text-secondary small">
+                    <span><i class="fa-solid fa-clock me-1 text-info"></i> Commitment: {{ roadmap.hours_per_day }} hrs/day</span>
+                    <span><i class="fa-solid fa-calendar-days me-1 text-warning"></i> Days: {{ roadmap.days_per_week }} days/wk</span>
+                    <span><i class="fa-solid fa-bullseye me-1 text-success"></i> Target Skill Gaps: {{ missing_skills|length }} missing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skill Gap Matrix Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-success fw-bold mb-3"><i class="fa-solid fa-circle-check me-2"></i> Skills Already Mastered ({{ existing_skills|length }})</h5>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for s in existing_skills %}
+                        <span class="skill-badge skill-badge-existing">{{ s }}</span>
+                    {% empty %}
+                        <span class="text-secondary small">Upload resume to auto-detect mastered skills.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-danger fw-bold mb-3"><i class="fa-solid fa-bullseye me-2"></i> Target Missing Skills to Master ({{ missing_skills|length }})</h5>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for s in missing_skills %}
+                        <span class="skill-badge skill-badge-missing"><i class="fa-solid fa-plus me-1"></i> {{ s }}</span>
+                    {% empty %}
+                        <span class="text-success small">No skill gaps! You meet all baseline technical skills.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roadmap Phases & Tasks -->
+    <div class="mb-4">
+        {% for phase_name, phase_tasks in phases.items %}
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h4 class="h5 text-white fw-bold mb-0">
+                    <i class="fa-solid fa-flag text-indigo-400 me-2" style="color: #818cf8;"></i> {{ phase_name }}
+                </h4>
+                <span class="badge bg-dark border border-secondary text-secondary small">
+                    {{ phase_tasks|length }} Milestones
+                </span>
+            </div>
+
+            <div class="list-group list-group-flush">
+                {% for task in phase_tasks %}
+                <div class="list-group-item bg-transparent text-white border-0 px-0 py-3 border-bottom border-secondary border-opacity-10 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                    <div class="d-flex align-items-start gap-3 flex-grow-1">
+                        <!-- Task Toggle Form -->
+                        <form method="post" action="{% url 'toggle_task_status' task.id %}" class="mt-1">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="{% if task.status == 'Completed' %}Pending{% else %}Completed{% endif %}">
+                            <button type="submit" class="btn btn-link p-0 text-decoration-none border-0">
+                                {% if task.status == 'Completed' %}
+                                    <i class="fa-solid fa-circle-check text-success fa-xl"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-circle text-secondary fa-xl"></i>
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <div>
+                            <h5 class="h6 text-white fw-bold mb-1 {% if task.status == 'Completed' %}text-decoration-line-through text-muted{% endif %}">
+                                {{ task.title }}
+                            </h5>
+                            <p class="text-secondary small mb-2">{{ task.description }}</p>
+                            
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                <span class="badge {% if task.priority == 'High Priority' %}bg-danger{% elif task.priority == 'Medium Priority' %}bg-warning text-dark{% else %}bg-info{% endif %} small">
+                                    {{ task.priority }}
+                                </span>
+                                <span class="badge bg-dark border border-secondary text-secondary small">
+                                    <i class="fa-solid fa-hourglass-half me-1"></i> ~{{ task.estimated_hours }} hrs
+                                </span>
+                                {% if task.completed_at %}
+                                <span class="text-success small"><i class="fa-solid fa-check me-1"></i> Completed {{ task.completed_at|date:"M d" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+    <!-- No Roadmap Yet — Empty State -->
+    <div class="card-glass p-5 text-center mb-4">
+        <i class="fa-solid fa-map-location-dot fa-3x text-warning mb-3" style="color: #f59e0b;"></i>
+        <h4 class="text-white fw-bold mb-2">No Roadmap Generated Yet</h4>
+        <p class="text-secondary mb-4">Click <strong class="text-white">Customize &amp; Regenerate</strong> above to create your personalized career learning curriculum. Make sure you have set a <strong class="text-white">Target Role</strong> in your Profile first.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'profile' %}" class="btn btn-secondary-custom">
+                <i class="fa-solid fa-user me-1"></i> Set Target Role in Profile
+            </a>
+            <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#regenerateModal">
+                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate My Roadmap
+            </button>
+        </div>
+    </div>
+
+    <!-- Still show skill gap even without roadmap -->
+    {% if existing_skills or missing_skills %}
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-success fw-bold mb-3"><i class="fa-solid fa-circle-check me-2"></i> Skills Already Mastered ({{ existing_skills|length }})</h5>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for s in existing_skills %}<span class="skill-badge skill-badge-existing">{{ s }}</span>{% empty %}<span class="text-secondary small">Upload resume to auto-detect skills.</span>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-danger fw-bold mb-3"><i class="fa-solid fa-bullseye me-2"></i> Skills Still to Learn ({{ missing_skills|length }})</h5>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for s in missing_skills %}<span class="skill-badge skill-badge-missing"><i class="fa-solid fa-plus me-1"></i> {{ s }}</span>{% empty %}<span class="text-success small">No skill gaps detected!</span>{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+</div>
+
+
+<!-- Customize Modal -->
+<div class="modal fade" id="regenerateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content card-glass border border-secondary">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title text-white fw-bold"><i class="fa-solid fa-sliders text-indigo-400 me-2"></i> Customize Career Roadmap</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'roadmap' %}">
+                {% csrf_token %}
+                <input type="hidden" name="regenerate" value="1">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label form-label-custom">Available Hours Per Day</label>
+                        <input type="number" name="hours_per_day" class="form-control form-control-custom" value="{{ roadmap.hours_per_day }}" min="1" max="12" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label-custom">Study Days Per Week</label>
+                        <input type="number" name="days_per_week" class="form-control form-control-custom" value="{{ roadmap.days_per_week }}" min="1" max="7" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Regenerate Roadmap
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

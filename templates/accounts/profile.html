@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Profile & Summary Card -->
+        <div class="col-lg-4 mb-4">
+            <!-- Main Candidate Overview Card -->
+            <div class="card-glass p-4 text-center mb-4">
+                <!-- Candidate Initials Avatar -->
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width:90px;height:90px;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);color:white;font-size:2.2rem;font-weight:700;">
+                    {{ profile.full_name|default:user.username|slice:":1"|upper }}
+                </div>
+                <h3 class="text-white fw-bold mb-1">{{ profile.full_name|default:user.username }}</h3>
+                <p class="text-secondary small mb-2">@{{ user.username }}</p>
+                <p class="badge bg-indigo-500 text-uppercase mb-3" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                    <i class="fa-solid fa-briefcase me-1"></i> {{ profile.target_role }}
+                </p>
+
+                {% if profile.bio %}
+                <p class="text-secondary small fst-italic mb-3 px-2">"{{ profile.bio }}"</p>
+                {% endif %}
+
+                <!-- Contact & Preferences Quick Info -->
+                <div class="text-start mt-3 pt-3 border-top border-secondary border-opacity-25 small text-secondary">
+                    <p class="mb-2"><i class="fa-solid fa-envelope me-2 text-indigo-400"></i> {{ user.email }}</p>
+                    <p class="mb-2"><i class="fa-solid fa-phone me-2 text-indigo-400"></i> {{ profile.phone|default:"Not specified" }}</p>
+                    <p class="mb-2"><i class="fa-solid fa-location-dot me-2 text-indigo-400"></i> {{ profile.location|default:"Not specified" }}</p>
+                    <p class="mb-2"><i class="fa-solid fa-laptop-house me-2 text-indigo-400"></i> Work Mode: <span class="text-white">{{ profile.preferred_work_mode }}</span></p>
+                    <p class="mb-2"><i class="fa-solid fa-clock me-2 text-indigo-400"></i> Notice Period: <span class="text-white">{{ profile.notice_period }}</span></p>
+                    {% if profile.expected_salary %}
+                    <p class="mb-2"><i class="fa-solid fa-money-bill-wave me-2 text-indigo-400"></i> Expected: <span class="text-white">{{ profile.expected_salary }}</span></p>
+                    {% endif %}
+                    <p class="mb-2"><i class="fa-solid fa-graduation-cap me-2 text-indigo-400"></i> {{ profile.education|default:"Degree not set" }} {% if profile.graduation_year %}({{ profile.graduation_year }}){% endif %}</p>
+                    <p class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-indigo-400"></i> {{ profile.experience_level }} ({{ profile.years_of_experience }} yrs)</p>
+                </div>
+
+                <!-- Social & Professional Links -->
+                {% if profile.linkedin_url or profile.github_url or profile.portfolio_url %}
+                <div class="d-flex justify-content-center gap-3 mt-3 pt-3 border-top border-secondary border-opacity-25">
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-sm btn-outline-light rounded-circle" title="LinkedIn Profile">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </a>
+                    {% endif %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="btn btn-sm btn-outline-light rounded-circle" title="GitHub Profile">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+                    {% endif %}
+                    {% if profile.portfolio_url %}
+                    <a href="{{ profile.portfolio_url }}" target="_blank" class="btn btn-sm btn-outline-light rounded-circle" title="Portfolio / Website">
+                        <i class="fa-solid fa-globe"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Latest Resume & ATS Analysis Card -->
+            <div class="card-glass p-4">
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-file-pdf text-indigo-400 me-2"></i> Latest Resume & ATS Status</h5>
+                {% if latest_resume %}
+                <div class="p-3 rounded-3 mb-3" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-white fw-semibold text-truncate me-2"><i class="fa-solid fa-file-lines text-indigo-400 me-1"></i> {{ latest_resume.original_name|default:"Resume.pdf" }}</span>
+                        {% if latest_analysis %}
+                        <span class="badge bg-indigo-500 fs-6">{{ latest_analysis.ats_score }}/100 ATS</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-secondary small mb-0">Uploaded: {{ latest_resume.uploaded_at|date:"M d, Y" }}</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'resume_analysis' %}" class="btn btn-secondary-custom btn-sm">
+                        <i class="fa-solid fa-chart-column me-1"></i> View Full Resume Analysis
+                    </a>
+                    <a href="{% url 'upload_resume' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fa-solid fa-upload me-1"></i> Upload Updated Resume
+                    </a>
+                </div>
+                {% else %}
+                <p class="text-secondary small text-center mb-3">No resume uploaded yet. Upload a resume to get instant ATS scores and personalized career guidance.</p>
+                <div class="d-grid">
+                    <a href="{% url 'upload_resume' %}" class="btn btn-primary-custom btn-sm">
+                        <i class="fa-solid fa-upload me-1"></i> Upload Resume Now
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Candidate Profile Form -->
+        <div class="col-lg-8">
+            <div class="card-glass p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-secondary border-opacity-25 pb-3">
+                    <div>
+                        <h2 class="h3 text-white fw-bold mb-1"><i class="fa-solid fa-id-card text-indigo-400 me-2"></i> Profile</h2>
+                        <p class="text-secondary small mb-0">Keep your latest details updated to receive accurate AI job recommendations and tailored career roadmaps.</p>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Section 1: Personal & Contact Information -->
+                    <h5 class="text-indigo-400 fw-bold mb-3"><i class="fa-solid fa-user me-2"></i> Personal & Contact Info</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">First Name</label>
+                            {{ u_form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Last Name</label>
+                            {{ u_form.last_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Email Address</label>
+                            {{ u_form.email }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Phone Number</label>
+                            {{ p_form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Location / City</label>
+                            {{ p_form.location }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Full Candidate Name</label>
+                            {{ p_form.full_name }}
+                        </div>
+
+
+                        <div class="col-md-12">
+                            <label class="form-label form-label-custom">Professional Bio / Summary</label>
+                            {{ p_form.bio }}
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Social & Portfolio Links -->
+                    <h5 class="text-indigo-400 fw-bold mb-3"><i class="fa-solid fa-share-nodes me-2"></i> Social Profiles & Portfolio Links</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">LinkedIn URL</label>
+                            {{ p_form.linkedin_url }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">GitHub URL</label>
+                            {{ p_form.github_url }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">Portfolio / Website</label>
+                            {{ p_form.portfolio_url }}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Career Details & Target Role -->
+                    <h5 class="text-indigo-400 fw-bold mb-3"><i class="fa-solid fa-bullseye me-2"></i> Target Role & Career Preferences</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Target Career / Role</label>
+                            {{ p_form.target_role }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Current Role / Title</label>
+                            {{ p_form.current_role }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Experience Level</label>
+                            {{ p_form.experience_level }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Years of Experience</label>
+                            {{ p_form.years_of_experience }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">Preferred Work Mode</label>
+                            {{ p_form.preferred_work_mode }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">Notice Period</label>
+                            {{ p_form.notice_period }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label form-label-custom">Expected Salary</label>
+                            {{ p_form.expected_salary }}
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Education Background -->
+                    <h5 class="text-indigo-400 fw-bold mb-3"><i class="fa-solid fa-graduation-cap me-2"></i> Education Background</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Education Qualification</label>
+                            {{ p_form.education }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Degree / Major</label>
+                            {{ p_form.degree }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">University / College</label>
+                            {{ p_form.university }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label form-label-custom">Graduation Year</label>
+                            {{ p_form.graduation_year }}
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Technical Skills & Career Objectives -->
+                    <h5 class="text-indigo-400 fw-bold mb-3"><i class="fa-solid fa-code me-2"></i> Technical Skills & Objectives</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label form-label-custom">Key Technical Skills (Comma Separated)</label>
+                            {{ p_form.key_skills }}
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label form-label-custom">Career Goal Summary</label>
+                            {{ p_form.career_goal }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary-custom px-4">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Save Latest Profile Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+Django>=4.2,<5.2
+djangorestframework>=3.14.0
+Pillow>=10.3,<13
+PyPDF2>=3.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.2.0
+nltk>=3.8.0
+python-dotenv>=1.0.0
+google-generativeai>=0.4.0
+dj-database-url>=2.2,<3
+psycopg[binary]>=3.2,<4
+django-storages[s3]>=1.14.4,<2
+django-axes>=7,<9
+whitenoise>=6.7,<7

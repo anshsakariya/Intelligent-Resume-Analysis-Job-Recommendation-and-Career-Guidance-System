@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Career Assistant - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-robot text-danger me-2" style="color: #f87171;"></i> AI Career Mentor Assistant
+            </h1>
+            <p class="text-secondary mb-0">Multi-agent intelligence system (Resume, Job & Planner agents coordinated by Central Orchestrator).</p>
+        </div>
+        <div>
+            <a href="{% url 'new_chat' %}" class="btn btn-secondary-custom btn-sm">
+                <i class="fa-solid fa-plus me-1"></i> New Session
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Container Card -->
+    <div class="card-glass p-3 p-md-4">
+        <!-- Chat History Stream -->
+        <div class="chat-container mb-3" id="chatContainer">
+            {% if chat_messages.exists %}
+                {% for msg in chat_messages %}
+                    {% if msg.sender == 'user' %}
+                        <div class="chat-bubble chat-bubble-user">
+                            <div class="small text-white-50 mb-1 font-monospace" style="font-size: 0.75rem;">
+                                <i class="fa-solid fa-user me-1"></i> {{ user.username }} &bull; {{ msg.timestamp|date:"H:i" }}
+                            </div>
+                            <div>{{ msg.message|linebreaksbr }}</div>
+                        </div>
+                    {% else %}
+                        <div class="chat-bubble chat-bubble-ai">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-indigo-500 small" style="background: rgba(99, 102, 241, 0.25); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                                    <i class="fa-solid fa-brain me-1"></i> {{ msg.agent_type }}
+                                </span>
+                                <span class="text-secondary small font-monospace" style="font-size: 0.75rem;">{{ msg.timestamp|date:"H:i" }}</span>
+                            </div>
+                            <div class="markdown-content">{{ msg.message|linebreaksbr }}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5 my-auto">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                        <i class="fa-solid fa-comments fa-2xl"></i>
+                    </div>
+                    <h4 class="text-white fw-bold">Ask me anything about your career!</h4>
+                    <p class="text-secondary max-w-md mx-auto small">I analyze your resume, ATS score, missing skills, and target career goal to provide tailored answers.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sample Prompt Chips -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="text-secondary small me-1 align-self-center"><i class="fa-solid fa-wand-magic-sparkles me-1 text-warning"></i> Try asking:</span>
+            <button type="button" class="badge bg-dark border border-secondary text-secondary p-2 style="cursor: pointer;" onclick="setPrompt('What skills am I missing for my target role?')">
+                What skills am I missing?
+            </button>
+            <button type="button" class="badge bg-dark border border-secondary text-secondary p-2 style="cursor: pointer;" onclick="setPrompt('Which jobs should I apply for?')">
+                Which jobs should I apply for?
+            </button>
+            <button type="button" class="badge bg-dark border border-secondary text-secondary p-2 style="cursor: pointer;" onclick="setPrompt('How can I improve my resume ATS score?')">
+                How to improve my ATS score?
+            </button>
+            <button type="button" class="badge bg-dark border border-secondary text-secondary p-2 style="cursor: pointer;" onclick="setPrompt('Generate a 3-month roadmap for me.')">
+                Generate 3-month roadmap
+            </button>
+        </div>
+
+        <!-- Message Input Form -->
+        <form method="post" id="chatForm" action="{% url 'chatbot' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" name="message" id="messageInput" class="form-control form-control-custom" placeholder="Ask your AI Career Mentor a question..." required autocomplete="off">
+                <button type="submit" class="btn btn-primary-custom px-4" id="sendBtn">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Send
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function scrollToBottom() {
+        const container = document.getElementById('chatContainer');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function setPrompt(text) {
+        document.getElementById('messageInput').value = text;
+        document.getElementById('messageInput').focus();
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        scrollToBottom();
+
+        const form = document.getElementById('chatForm');
+        form.addEventListener('submit', function(e) {
+            scrollToBottom();
+        });
+    });
+</script>
+{% endblock %}

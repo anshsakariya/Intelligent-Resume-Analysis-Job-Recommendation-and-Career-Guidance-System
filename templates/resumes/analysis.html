@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Analysis & ATS Score - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Title -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-chart-line text-indigo-400 me-2" style="color: #818cf8;"></i> Resume ATS Score & NLP Insights
+            </h1>
+            <p class="text-secondary mb-0">Analysis evaluated against target role: <strong class="text-white">{{ user.profile.target_role }}</strong></p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'upload_resume' %}" class="btn btn-primary-custom btn-sm">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload New Resume
+            </a>
+            <a href="{% url 'job_recommendations' %}" class="btn btn-secondary-custom btn-sm">
+                <i class="fa-solid fa-briefcase me-1"></i> View Recommended Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Overview Metrics -->
+    <div class="row g-4 mb-4">
+        <!-- ATS Score Dial Card -->
+        <div class="col-lg-4">
+            <div class="card-glass p-4 text-center h-100 d-flex flex-column justify-content-center">
+                <h5 class="text-secondary text-uppercase tracking-wider small fw-semibold mb-3">Overall ATS Resume Score</h5>
+                <div class="position-relative d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 160px; height: 160px;">
+                    <svg width="160" height="160" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="10"/>
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#gradientScore)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="{{ 314|add:'-3.14'|stringformat:'f' }}" style="stroke-dashoffset: calc(314 - (314 * {{ analysis.ats_score }}) / 100); transition: stroke-dashoffset 1s ease;"/>
+                        <defs>
+                            <linearGradient id="gradientScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1" />
+                                <stop offset="100%" stop-color="#06b6d4" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="position-absolute text-center">
+                        <span class="display-5 fw-extrabold text-white">{{ analysis.ats_score }}</span>
+                        <span class="text-secondary d-block fs-6">/ 100</span>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    {% if analysis.ats_score >= 80 %}
+                        <span class="badge bg-success fs-6 px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i> Excellent Candidate Match</span>
+                    {% elif analysis.ats_score >= 65 %}
+                        <span class="badge bg-info fs-6 px-3 py-2"><i class="fa-solid fa-thumbs-up me-1"></i> Good Resume Match</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Needs Improvement</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric Breakdown Grid -->
+        <div class="col-lg-8">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-white fw-bold mb-4"><i class="fa-solid fa-sliders me-2 text-indigo-400"></i> Category Score Breakdown</h5>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-solid fa-code text-indigo-400 me-1"></i> Skills Match</span>
+                            <span class="fw-bold text-white">{{ analysis.skills_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.skills_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-solid fa-key text-info me-1"></i> Keyword Alignment</span>
+                            <span class="fw-bold text-white">{{ analysis.keyword_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.keyword_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #06b6d4 0%, #22d3ee 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-solid fa-graduation-cap text-warning me-1"></i> Education Section</span>
+                            <span class="fw-bold text-white">{{ analysis.education_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.education_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-solid fa-layer-group text-purple me-1" style="color: #a78bfa;"></i> Resume Structure</span>
+                            <span class="fw-bold text-white">{{ analysis.structure_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.structure_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-solid fa-briefcase text-success me-1"></i> Experience &amp; History</span>
+                            <span class="fw-bold text-white">{{ analysis.experience_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.experience_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #10b981 0%, #34d399 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span><i class="fa-brands fa-github text-danger me-1"></i> Projects &amp; Work Samples</span>
+                            <span class="fw-bold text-white">{{ analysis.projects_score }}%</span>
+                        </div>
+                        <div class="progress-custom" style="height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 9999px; overflow: hidden; display: flex;">
+                            <div class="progress-bar-custom" style="width: {{ analysis.projects_score }}%; height: 100%; min-height: 10px; background: linear-gradient(90deg, #f43f5e 0%, #fb7185 100%); border-radius: 9999px; box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    <h6 class="text-white fw-bold mb-2"><i class="fa-solid fa-code me-2 text-info"></i> Detected Technical Skills</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for us in extracted_skills %}
+                            <span class="skill-badge"><i class="fa-solid fa-check text-success me-1"></i> {{ us.skill.name }}</span>
+                        {% empty %}
+                            <span class="text-secondary small">No specific technical skills extracted cleanly from PDF text.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strengths & Weaknesses Section -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-success fw-bold mb-3"><i class="fa-solid fa-circle-check me-2"></i> Key Strengths</h5>
+                <ul class="list-unstyled mb-0">
+                    {% for strength in analysis.strengths %}
+                        <li class="mb-2 text-secondary d-flex align-items-start">
+                            <i class="fa-solid fa-check text-success mt-1 me-2"></i>
+                            <span>{{ strength }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="text-secondary small">Upload a complete resume to see detailed strengths.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card-glass p-4 h-100">
+                <h5 class="text-warning fw-bold mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> Areas for Improvement</h5>
+                <ul class="list-unstyled mb-0">
+                    {% for weakness in analysis.weaknesses %}
+                        <li class="mb-2 text-secondary d-flex align-items-start">
+                            <i class="fa-solid fa-xmark text-danger mt-1 me-2"></i>
+                            <span>{{ weakness }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="text-secondary small">No major structural weaknesses detected.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HOW TO GET A HIGHER ATS SCORE — Tailored Suggestions Section      -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="card-glass p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3 border-bottom border-secondary border-opacity-25 pb-3">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width:46px;height:46px;border-radius:12px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-arrow-trend-up text-warning fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="text-white fw-bold mb-0">How to Get a Higher ATS Score</h5>
+                    <p class="text-secondary small mb-0">Personalised suggestions based on your current score of <strong class="text-warning">{{ analysis.ats_score }}/100</strong></p>
+                </div>
+            </div>
+            <div>
+                {% if analysis.ats_score >= 85 %}
+                    <span class="badge px-3 py-2 fs-6" style="background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);">
+                        <i class="fa-solid fa-trophy me-1"></i> Excellent (85–100)
+                    </span>
+                {% elif analysis.ats_score >= 70 %}
+                    <span class="badge px-3 py-2 fs-6" style="background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.3);">
+                        <i class="fa-solid fa-thumbs-up me-1"></i> Good (70–84)
+                    </span>
+                {% elif analysis.ats_score >= 55 %}
+                    <span class="badge px-3 py-2 fs-6" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Average (55–69)
+                    </span>
+                {% else %}
+                    <span class="badge px-3 py-2 fs-6" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);">
+                        <i class="fa-solid fa-circle-exclamation me-1"></i> Needs Improvement (&lt;55)
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Suggestion Cards Grid -->
+        <div class="row g-3">
+            {% for suggestion in analysis.suggestions %}
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 h-100" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                        <div class="d-flex align-items-start gap-3">
+                            <span class="badge bg-indigo-500 rounded-circle mt-1" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">{{ forloop.counter }}</span>
+                            <span class="text-secondary" style="font-size: 0.95rem; line-height: 1.5;">{{ suggestion }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="p-3 rounded-3 text-center" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25);">
+                        <p class="text-success small mb-0"><i class="fa-solid fa-circle-check me-1"></i> Your resume is well structured! Follow your learning roadmap to continue building skills.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Extracted Raw Text Card -->
+    <div class="card-glass p-4">
+        <button class="btn btn-secondary-custom w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#rawTextCollapse" aria-expanded="false" aria-controls="rawTextCollapse">
+            <span><i class="fa-solid fa-file-text me-2 text-indigo-400"></i> View Extracted Resume Text</span>
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="collapse mt-3" id="rawTextCollapse">
+            <div class="p-3 rounded-3 text-secondary font-monospace small" style="background: rgba(11, 15, 25, 0.9); max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                {{ resume.extracted_text|default:"No extracted text available." }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

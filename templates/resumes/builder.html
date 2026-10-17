@@ -1,0 +1,677 @@
+{% extends 'base.html' %}
+
+{% block title %}Candidate Resume Builder (90+ ATS for Fresher & Experienced) - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 me-2" style="color: #818cf8;"></i>
+                Candidate Resume Builder &amp; 90+ ATS Generator
+            </h1>
+            <p class="text-secondary mb-0">
+                Generate guaranteed <strong class="text-success">90+ ATS Score Resumes</strong> for both <span class="text-warning fw-semibold">Freshers</span> and <span class="text-info fw-semibold">Experienced Professionals</span> with 4–5 verified technical projects.
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-warning btn-sm" id="btnAutoFillFresher">
+                <i class="fa-solid fa-graduation-cap me-1"></i> Auto-Fill Fresher (90+ ATS)
+            </button>
+            <button type="button" class="btn btn-outline-info btn-sm" id="btnAutoFillExperienced">
+                <i class="fa-solid fa-briefcase me-1"></i> Auto-Fill Experienced (90+ ATS)
+            </button>
+            <a href="{% url 'upload_resume' %}" class="btn btn-secondary-custom btn-sm">
+                <i class="fa-solid fa-upload me-1"></i> Upload Existing PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Guarantees Banner -->
+    <div class="card-glass p-3 mb-4" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(6,182,212,0.08)); border: 1px solid rgba(99,102,241,0.35);">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-award text-indigo-400 fs-4" style="color:#818cf8;"></i>
+            </div>
+            <div>
+                <h6 class="text-white fw-bold mb-1">Fresher &amp; Experienced Dual 90+ ATS Architecture:</h6>
+                <p class="text-secondary small mb-0">
+                    &bull; <strong>Freshers:</strong> Evaluated on 4–5 Technical Projects, Internships, Academic Training, CGPA, 12+ Skills, and Role Keywords &rarr; <span class="text-success fw-bold">95–98 ATS Score</span>.<br>
+                    &bull; <strong>Experienced:</strong> Evaluated on Corporate Work History, Scale Metrics, 4–5 Enterprise Projects, 12+ Skills, and Keywords &rarr; <span class="text-success fw-bold">95–98 ATS Score</span>.
+                </p>
+            </div>
+            <div class="ms-auto text-end d-none d-md-block">
+                <span class="badge px-3 py-2 fs-6" style="background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);">
+                    <i class="fa-solid fa-shield-check me-1"></i> Certified 90+ Score
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post" id="resumeBuilderForm" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger card-glass border-0 mb-4" role="alert">
+            <h6 class="fw-bold mb-2"><i class="fa-solid fa-circle-exclamation me-2"></i> Please correct the following errors:</h6>
+            <ul class="mb-0 ps-3">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- SECTION 0: Candidate Profile Type -->
+        <div class="card-glass p-4 mb-4" style="border-left: 4px solid #f59e0b;">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-user-tag text-warning me-2"></i> Select Candidate Type
+                </h5>
+                <span class="badge bg-warning text-dark small fw-bold">Step 1</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.candidate_type.label }} <span class="text-danger">*</span></label>
+                    {{ form.candidate_type }}
+                    <small class="text-secondary d-block mt-1">
+                        Select whether this resume is for a <strong>Fresher</strong> (internship &amp; college projects) or <strong>Experienced Professional</strong>.
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.target_role.label }} <span class="text-danger">*</span></label>
+                    {{ form.target_role }}
+                    <small class="text-secondary d-block mt-1">Target role keywords will be 100% matched for top ATS ranking.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: Personal & Contact Information -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-address-card text-indigo-400 me-2" style="color: #818cf8;"></i> 1. Contact Information
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small">All Compulsory *</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.full_name.label }} <span class="text-danger">*</span></label>
+                    {{ form.full_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.email.label }} <span class="text-danger">*</span></label>
+                    {{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.phone.label }} <span class="text-danger">*</span></label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.location.label }} <span class="text-danger">*</span></label>
+                    {{ form.location }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.linkedin_url.label }} <span class="text-danger">*</span></label>
+                    {{ form.linkedin_url }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.github_url.label }} <span class="text-danger">*</span></label>
+                    {{ form.github_url }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Professional Summary -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-file-lines text-info me-2"></i> 2. Professional Career Summary / Objective
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small">Compulsory *</span>
+            </div>
+            <p class="text-secondary small mb-2">Write a focused 3-4 line summary packed with keywords tailored to your target role.</p>
+            {{ form.professional_summary }}
+        </div>
+
+        <!-- SECTION 3: Technical & Soft Skills -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-code text-warning me-2"></i> 3. Technical &amp; Soft Skills (12+ Skills)
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small">Compulsory *</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.technical_skills.label }} <span class="text-danger">*</span></label>
+                    {{ form.technical_skills }}
+                    <small class="text-secondary d-block mt-1">
+                        <i class="fa-solid fa-circle-info text-info me-1"></i>
+                        The system will automatically guarantee 100% keyword match for your selected role.
+                    </small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.soft_skills.label }} <span class="text-danger">*</span></label>
+                    {{ form.soft_skills }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Work Experience / Internship / Academic Capstone -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0" id="experienceSectionHeading">
+                    <i class="fa-solid fa-briefcase text-success me-2"></i> 4. Work Experience &amp; Practical Training
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small" id="experienceCompulsoryBadge">Compulsory *</span>
+            </div>
+
+            <!-- Fresher Helper Guide -->
+            <div id="fresherExperienceGuide" class="p-3 mb-3 rounded-3" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3);">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                    <span class="text-white small fw-bold">
+                        <i class="fa-solid fa-lightbulb text-warning me-1"></i> Fresher Guide: What to enter if you have No Corporate Work Experience?
+                    </span>
+                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small">100% ATS Approved</span>
+                </div>
+                <p class="text-secondary small mb-2">
+                    <strong>Corporate employment is NOT required for Freshers!</strong> If you don't have company experience or an internship, you can <strong>leave these fields blank</strong> (the system will automatically generate high-scoring Academic Capstone experience for your college), or choose a 1-click option below:
+                </p>
+                <div class="d-flex flex-wrap gap-2" id="fresherOptionsChips">
+                    <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" onclick="setFresherWorkType('no_company')">
+                        <i class="fa-solid fa-shield-halved me-1"></i> No Company? (Academic Capstone Auto-Fill)
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="setFresherWorkType('internship')">
+                        <i class="fa-solid fa-briefcase me-1"></i> Internship Experience
+                    </button>
+                    <button type="button" class="btn btn-outline-success btn-sm" onclick="setFresherWorkType('freelance')">
+                        <i class="fa-solid fa-laptop-code me-1"></i> Freelance / Open Source
+                    </button>
+                </div>
+            </div>
+
+            <!-- Experienced Helper Guide -->
+            <div id="experiencedExperienceGuide" class="p-3 mb-3 rounded-3 d-none" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <span class="text-white small fw-bold">
+                    <i class="fa-solid fa-building text-success me-1"></i> Experienced Candidate Guide:
+                </span>
+                <p class="text-secondary small mb-0 mt-1">
+                    For experienced professionals, Company Name, Job Title, Duration, Location, and Work Achievements are <strong>compulsory</strong> for maximum ATS ranking.
+                </p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold" id="jobTitleLabel">
+                        {{ form.job_title.label }} <span class="text-danger" id="jobTitleReqStar">*</span>
+                    </label>
+                    {{ form.job_title }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold" id="companyNameLabel">
+                        {{ form.company_name.label }} <span class="text-danger" id="companyNameReqStar">*</span>
+                    </label>
+                    {{ form.company_name }}
+                    <small class="text-secondary d-block mt-1" id="companyHelperText">
+                        (Fresher: Leave blank if no company experience; Academic Capstone will be auto-generated)
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">
+                        {{ form.experience_duration.label }} <span class="text-danger" id="expDurationReqStar">*</span>
+                    </label>
+                    {{ form.experience_duration }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">
+                        {{ form.experience_location.label }} <span class="text-danger" id="expLocReqStar">*</span>
+                    </label>
+                    {{ form.experience_location }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">
+                        {{ form.experience_bullet_1.label }} <span class="text-danger" id="expB1ReqStar">*</span>
+                    </label>
+                    {{ form.experience_bullet_1 }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.experience_bullet_2.label }}</label>
+                    {{ form.experience_bullet_2 }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.experience_bullet_3.label }}</label>
+                    {{ form.experience_bullet_3 }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: 4 to 5 Technical Projects -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <div>
+                    <h5 class="text-white fw-bold mb-0">
+                        <i class="fa-brands fa-github text-danger me-2"></i> 5. Key Technical Projects (4–5 Projects Portfolio)
+                    </h5>
+                    <small class="text-secondary">4 to 5 high-impact projects with live links, tech stack, and measurable outcomes.</small>
+                </div>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small">4–5 Projects</span>
+            </div>
+
+            <!-- Project #1 -->
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="text-indigo-400 fw-bold mb-0"><i class="fa-solid fa-code-branch me-1"></i> Project #1</h6>
+                    <span class="badge bg-danger bg-opacity-25 text-danger small">Compulsory *</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_1_title.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_1_title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_1_tech.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_1_tech }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_1_link.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_1_link }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_1_desc.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_1_desc }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project #2 -->
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="text-indigo-400 fw-bold mb-0"><i class="fa-solid fa-code-branch me-1"></i> Project #2</h6>
+                    <span class="badge bg-danger bg-opacity-25 text-danger small">Compulsory *</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_2_title.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_2_title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_2_tech.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_2_tech }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_2_link.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_2_link }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_2_desc.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_2_desc }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project #3 -->
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="text-indigo-400 fw-bold mb-0"><i class="fa-solid fa-code-branch me-1"></i> Project #3</h6>
+                    <span class="badge bg-danger bg-opacity-25 text-danger small">Compulsory *</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_3_title.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_3_title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_3_tech.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_3_tech }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_3_link.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_3_link }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_3_desc.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_3_desc }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project #4 -->
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(11, 15, 25, 0.6); border: 1px solid var(--border-color);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="text-indigo-400 fw-bold mb-0"><i class="fa-solid fa-code-branch me-1"></i> Project #4</h6>
+                    <span class="badge bg-danger bg-opacity-25 text-danger small">Compulsory *</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_4_title.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_4_title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_4_tech.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_4_tech }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_4_link.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_4_link }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_4_desc.label }} <span class="text-danger">*</span></label>
+                        {{ form.project_4_desc }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project #5 (Optional 5th Project) -->
+            <div class="p-3 rounded-3" style="background: rgba(11, 15, 25, 0.4); border: 1px dashed rgba(255,255,255,0.15);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="text-secondary fw-bold mb-0"><i class="fa-solid fa-plus-circle me-1"></i> Project #5 (Optional)</h6>
+                    <span class="badge bg-secondary small">Optional 5th Project</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_5_title.label }}</label>
+                        {{ form.project_5_title }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_5_tech.label }}</label>
+                        {{ form.project_5_tech }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_5_link.label }}</label>
+                        {{ form.project_5_link }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white small fw-semibold">{{ form.project_5_desc.label }}</label>
+                        {{ form.project_5_desc }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 6: Education -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-graduation-cap text-warning me-2"></i> 6. Education &amp; Academic Background
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small">Compulsory *</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.degree.label }} <span class="text-danger">*</span></label>
+                    {{ form.degree }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.institution.label }} <span class="text-danger">*</span></label>
+                    {{ form.institution }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.graduation_year.label }} <span class="text-danger">*</span></label>
+                    {{ form.graduation_year }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-white small fw-semibold">{{ form.cgpa_or_percentage.label }} <span class="text-danger">*</span></label>
+                    {{ form.cgpa_or_percentage }}
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 7: Certifications & Achievements -->
+        <div class="card-glass p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+                <h5 class="text-white fw-bold mb-0">
+                    <i class="fa-solid fa-trophy text-info me-2"></i> 7. Certifications &amp; Key Achievements
+                </h5>
+                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small">Compulsory *</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.certifications.label }} <span class="text-danger">*</span></label>
+                    {{ form.certifications }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label text-white small fw-semibold">{{ form.achievements.label }} <span class="text-danger">*</span></label>
+                    {{ form.achievements }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button Row -->
+        <div class="card-glass p-4 text-center d-flex flex-column align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2 text-success">
+                <i class="fa-solid fa-circle-check fs-5"></i>
+                <span class="fw-semibold">All 7 Sections &amp; 4–5 Projects Configured for Guaranteed 90+ Score</span>
+            </div>
+            <button type="submit" class="btn btn-primary-custom btn-lg px-5 py-3 shadow-lg fs-5">
+                <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Generate Best-Score Resume (90+ ATS)
+            </button>
+            <p class="text-secondary small mb-0">
+                The system will automatically generate a clean, ATS-compliant PDF document, register it to your account, and calculate your certified ATS score.
+            </p>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript for Presets (Fresher & Experienced) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAutoFillFresher = document.getElementById('btnAutoFillFresher');
+    const btnAutoFillExperienced = document.getElementById('btnAutoFillExperienced');
+    const candidateTypeSelect = document.getElementById('candidateTypeSelect');
+
+    const fresherData = {
+        'candidateTypeSelect': 'fresher',
+        'targetRoleSelect': 'Python Developer',
+        'id_full_name': 'Rahul Sharma',
+        'id_email': 'rahul.sharma@example.com',
+        'id_phone': '+91 98765 43210',
+        'id_location': 'Ahmedabad, Gujarat, India',
+        'id_linkedin_url': 'https://linkedin.com/in/rahul-sharma-dev',
+        'id_github_url': 'https://github.com/rahulsharma-dev',
+        'id_professional_summary': 'Dedicated and eager Computer Engineering graduate with strong technical foundations in Python, Django, REST APIs, and database engineering. Winner of University Hackathon with 4 hands-on full-stack web projects demonstrating clean code architecture, Git workflows, and CI/CD deployment.',
+        'id_technical_skills': 'Python, Django, Flask, SQL, PostgreSQL, Docker, Git, REST API, Redis, Celery, Pytest, Linux, HTML, CSS, JavaScript, FastApi, Microservices, CI/CD, Data Structures',
+        'id_soft_skills': 'Problem Solving, Team Leadership, Quick Learner, Agile/Scrum, Communication, Time Management',
+        'id_job_title': 'Python Developer Intern / Academic Trainee',
+        'id_company_name': 'NextGen Infotech Solutions Pvt. Ltd.',
+        'id_experience_duration': 'June 2023 - Dec 2023',
+        'id_experience_location': 'Ahmedabad, Gujarat (Hybrid)',
+        'id_experience_bullet_1': 'Developed 8+ modular RESTful API endpoints using Django and PostgreSQL, achieving 99.8% test coverage with Pytest.',
+        'id_experience_bullet_2': 'Optimized database queries and added indexing, decreasing average JSON response latency by 38%.',
+        'id_experience_bullet_3': 'Collaborated with senior software engineers using Git branching workflows, pull requests, and Docker containerization.',
+        'id_project_1_title': 'AI Career Mentor & Intelligent Resume Analyzer',
+        'id_project_1_tech': 'Python, Django, PostgreSQL, NLP, Docker, Bootstrap, REST API',
+        'id_project_1_link': 'https://github.com/rahulsharma-dev/ai-career-mentor',
+        'id_project_1_desc': 'Engineered an intelligent NLP resume parser that extracts technical skills and computes ATS scores across 7 parameters with dynamic score improvement guidance.',
+        'id_project_2_title': 'Cloud-Native Distributed Task Queue & Redis Cache Manager',
+        'id_project_2_tech': 'Python, FastAPI, Redis, Docker, Pytest, PostgreSQL',
+        'id_project_2_link': 'https://github.com/rahulsharma-dev/distributed-task-engine',
+        'id_project_2_desc': 'Built an asynchronous microservice task dispatcher featuring automated worker retries, rate limiting, and Redis distributed caching for 300+ req/sec.',
+        'id_project_3_title': 'E-Commerce Marketplace with JWT Auth & Payment Integration',
+        'id_project_3_tech': 'Python, Django REST Framework, React, PostgreSQL, Stripe API, Docker',
+        'id_project_3_link': 'https://github.com/rahulsharma-dev/ecommerce-platform',
+        'id_project_3_desc': 'Architected a multi-vendor online shop with secure JWT authentication, cart persistence, automated email order confirmation, and webhook payment reconciliation.',
+        'id_project_4_title': 'Real-Time Chat & Team Collaboration Platform',
+        'id_project_4_tech': 'Python, Django Channels, WebSockets, Redis, JavaScript, SQLite',
+        'id_project_4_link': 'https://github.com/rahulsharma-dev/realtime-chat-app',
+        'id_project_4_desc': 'Implemented a low-latency real-time group collaboration system with live typing notifications, read receipts, and multi-room WebSocket channels.',
+        'id_project_5_title': 'Automated Sales Analytics & Interactive KPI Dashboard',
+        'id_project_5_tech': 'Python, Pandas, NumPy, SQL, Streamlit, Matplotlib',
+        'id_project_5_link': 'https://github.com/rahulsharma-dev/sales-etl-dashboard',
+        'id_project_5_desc': 'Created an automated ETL pipeline transforming 50,000+ records of transaction data into executive KPI charts with automated weekly summary generation.',
+        'id_degree': 'Bachelor of Technology (B.Tech) in Computer Engineering',
+        'id_institution': 'Gujarat Technological University (GTU)',
+        'id_graduation_year': '2020 - 2024',
+        'id_cgpa_or_percentage': '8.92 / 10 CGPA (First Class with Distinction)',
+        'id_certifications': 'AWS Certified Cloud Practitioner, Python for Data Science and Machine Learning (Coursera), Meta Backend Developer Professional Certificate',
+        'id_achievements': '1st Place in University Level Hackathon 2023, Solved 400+ algorithmic problems on LeetCode with top 8% contest rating'
+    };
+
+    const experiencedData = {
+        'candidateTypeSelect': 'experienced',
+        'targetRoleSelect': 'Python Developer',
+        'id_full_name': 'Rahul Sharma',
+        'id_email': 'rahul.sharma@example.com',
+        'id_phone': '+91 98765 43210',
+        'id_location': 'Ahmedabad, Gujarat, India',
+        'id_linkedin_url': 'https://linkedin.com/in/rahul-sharma-dev',
+        'id_github_url': 'https://github.com/rahulsharma-dev',
+        'id_professional_summary': 'Senior Python Developer with 4+ years of professional experience designing, building, and deploying scalable microservices and cloud-native backend systems. Proven expertise in Django, FastAPI, PostgreSQL, asynchronous event pipelines, and high-load performance optimization.',
+        'id_technical_skills': 'Python, Django, Flask, SQL, PostgreSQL, Docker, Git, REST API, Redis, Celery, Pytest, Linux, HTML, CSS, JavaScript, FastApi, Microservices, CI/CD, Kubernetes, AWS',
+        'id_soft_skills': 'Technical Leadership, System Architecture, Agile/Scrum, Mentorship, Cross-Functional Collaboration',
+        'id_job_title': 'Software Engineer / Backend Developer',
+        'id_company_name': 'Enterprise Cloud Solutions Pvt. Ltd.',
+        'id_experience_duration': 'Jan 2022 - Present',
+        'id_experience_location': 'Mumbai / Remote, India',
+        'id_experience_bullet_1': 'Architected and maintained high-throughput RESTful backend APIs handling 50,000+ daily active users with 99.95% production uptime.',
+        'id_experience_bullet_2': 'Led database optimization and query refactoring across 30+ tables, reducing CPU overhead by 45% and query execution time by 60%.',
+        'id_experience_bullet_3': 'Mentored 4 junior engineers, established automated CI/CD deployment pipelines on Docker/AWS, and reduced build failure rates by 70%.',
+        'id_project_1_title': 'AI Career Mentor & Intelligent Resume Analyzer',
+        'id_project_1_tech': 'Python, Django, PostgreSQL, NLP, Docker, Bootstrap, REST API',
+        'id_project_1_link': 'https://github.com/rahulsharma-dev/ai-career-mentor',
+        'id_project_1_desc': 'Engineered an intelligent NLP resume parser that extracts technical skills and computes ATS scores across 7 parameters with dynamic score improvement guidance.',
+        'id_project_2_title': 'Cloud-Native Distributed Task Queue & Redis Cache Manager',
+        'id_project_2_tech': 'Python, FastAPI, Redis, Docker, Pytest, PostgreSQL',
+        'id_project_2_link': 'https://github.com/rahulsharma-dev/distributed-task-engine',
+        'id_project_2_desc': 'Built an asynchronous microservice task dispatcher featuring automated worker retries, rate limiting, and Redis distributed caching for 300+ req/sec.',
+        'id_project_3_title': 'E-Commerce Marketplace with JWT Auth & Payment Integration',
+        'id_project_3_tech': 'Python, Django REST Framework, React, PostgreSQL, Stripe API, Docker',
+        'id_project_3_link': 'https://github.com/rahulsharma-dev/ecommerce-platform',
+        'id_project_3_desc': 'Architected a multi-vendor online shop with secure JWT authentication, cart persistence, automated email order confirmation, and webhook payment reconciliation.',
+        'id_project_4_title': 'Real-Time Chat & Team Collaboration Platform',
+        'id_project_4_tech': 'Python, Django Channels, WebSockets, Redis, JavaScript, SQLite',
+        'id_project_4_link': 'https://github.com/rahulsharma-dev/realtime-chat-app',
+        'id_project_4_desc': 'Implemented a low-latency real-time group collaboration system with live typing notifications, read receipts, and multi-room WebSocket channels.',
+        'id_project_5_title': 'Automated Sales Analytics & Interactive KPI Dashboard',
+        'id_project_5_tech': 'Python, Pandas, NumPy, SQL, Streamlit, Matplotlib',
+        'id_project_5_link': 'https://github.com/rahulsharma-dev/sales-etl-dashboard',
+        'id_project_5_desc': 'Created an automated ETL pipeline transforming 50,000+ records of transaction data into executive KPI charts with automated weekly summary generation.',
+        'id_degree': 'Bachelor of Technology (B.Tech) in Computer Engineering',
+        'id_institution': 'Gujarat Technological University (GTU)',
+        'id_graduation_year': '2018 - 2022',
+        'id_cgpa_or_percentage': '8.85 / 10 CGPA (First Class with Distinction)',
+        'id_certifications': 'AWS Certified Solutions Architect Associate, Meta Backend Developer Professional Certificate, Certified Kubernetes Application Developer (CKAD)',
+        'id_achievements': 'Promoted to Senior Backend Developer in 18 months, Led company migration to microservice architecture saving $12,000/yr in server costs'
+    };
+
+    function populateData(dataset, profileName) {
+        for (const [id, value] of Object.entries(dataset)) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.value = value;
+                el.classList.add('is-valid');
+            }
+        }
+        alert('✨ ' + profileName + ' (90+ ATS Guaranteed) sample data populated successfully with 4–5 projects! You can adjust any detail or click "Generate Best-Score Resume".');
+    }
+
+    if (btnAutoFillFresher) {
+        btnAutoFillFresher.addEventListener('click', function() {
+            populateData(fresherData, 'Fresher');
+            updateCandidateTypeUI('fresher');
+        });
+    }
+
+    if (btnAutoFillExperienced) {
+        btnAutoFillExperienced.addEventListener('click', function() {
+            populateData(experiencedData, 'Experienced Professional');
+            updateCandidateTypeUI('experienced');
+        });
+    }
+
+    function updateCandidateTypeUI(type) {
+        const fresherGuide = document.getElementById('fresherExperienceGuide');
+        const expGuide = document.getElementById('experiencedExperienceGuide');
+        const heading = document.getElementById('experienceSectionHeading');
+        const badge = document.getElementById('experienceCompulsoryBadge');
+        const helper = document.getElementById('companyHelperText');
+
+        const stars = ['jobTitleReqStar', 'companyNameReqStar', 'expDurationReqStar', 'expLocReqStar', 'expB1ReqStar'];
+
+        if (type === 'experienced') {
+            if (fresherGuide) fresherGuide.classList.add('d-none');
+            if (expGuide) expGuide.classList.remove('d-none');
+            if (heading) heading.innerHTML = '<i class="fa-solid fa-briefcase text-success me-2"></i> 4. Professional Work Experience (Experienced)';
+            if (badge) {
+                badge.innerText = 'Compulsory *';
+                badge.className = 'badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small';
+            }
+            if (helper) helper.innerText = 'કંપનીનું નામ દાખલ કરવું ફરજિયાત છે.';
+            stars.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('d-none');
+            });
+        } else {
+            if (fresherGuide) fresherGuide.classList.remove('d-none');
+            if (expGuide) expGuide.classList.add('d-none');
+            if (heading) heading.innerHTML = '<i class="fa-solid fa-graduation-cap text-warning me-2"></i> 4. Practical Experience / Academic Capstone (Fresher)';
+            if (badge) {
+                badge.innerText = 'Optional (Auto-Handled)';
+                badge.className = 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small';
+            }
+            if (helper) helper.innerText = '(Fresher: જો કંપની ન હોય તો ખાલી રાખો, સિસ્ટમ Academic Capstone સેટ કરશે)';
+            stars.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('d-none');
+            });
+        }
+    }
+
+    if (candidateTypeSelect) {
+        candidateTypeSelect.addEventListener('change', function() {
+            updateCandidateTypeUI(this.value);
+        });
+        updateCandidateTypeUI(candidateTypeSelect.value);
+    }
+
+    window.setFresherWorkType = function(type) {
+        const jobTitle = document.getElementById('id_job_title');
+        const companyName = document.getElementById('id_company_name');
+        const duration = document.getElementById('id_experience_duration');
+        const location = document.getElementById('id_experience_location');
+        const bullet1 = document.getElementById('id_experience_bullet_1');
+        const bullet2 = document.getElementById('id_experience_bullet_2');
+        const bullet3 = document.getElementById('id_experience_bullet_3');
+
+        if (type === 'no_company' || type === 'college_lab') {
+            const instVal = document.getElementById('id_institution')?.value || 'Gujarat Technological University (GTU)';
+            if (jobTitle) jobTitle.value = 'Academic Capstone Project Lead & Software Developer';
+            if (companyName) companyName.value = instVal + ' (Academic Project Lab)';
+            if (duration) duration.value = 'Final Year Capstone Project (2023 - 2024)';
+            if (location) location.value = 'On-Campus / Remote';
+            if (bullet1) bullet1.value = 'Led 4-member student team to design, architect, and build production-grade web application for capstone submission.';
+            if (bullet2) bullet2.value = 'Engineered core backend business logic, database schemas, and optimized RESTful API endpoints.';
+            if (bullet3) bullet3.value = 'Managed Git version control, conducted weekly sprint reviews, and presented live demo to faculty committee.';
+        } else if (type === 'internship') {
+            if (jobTitle) jobTitle.value = 'Python Developer Intern / Software Engineer Intern';
+            if (companyName) companyName.value = 'NextGen Solutions Pvt. Ltd. (Internship)';
+            if (duration) duration.value = 'June 2023 - Dec 2023 (6 Months)';
+            if (location) location.value = 'Remote / Ahmedabad, India';
+            if (bullet1) bullet1.value = 'Developed RESTful API endpoints and backend database models with 99% uptime.';
+            if (bullet2) bullet2.value = 'Optimized SQL queries and database schemas, reducing query response times by 35%.';
+            if (bullet3) bullet3.value = 'Collaborated with senior software engineers using Git, Docker, and code review standards.';
+        } else if (type === 'freelance') {
+            if (jobTitle) jobTitle.value = 'Freelance Web Developer & Open Source Contributor';
+            if (companyName) companyName.value = 'Self-Employed / GitHub Open Source';
+            if (duration) duration.value = 'Jan 2023 - Present';
+            if (location) location.value = 'Remote / Freelance';
+            if (bullet1) bullet1.value = 'Delivered custom web applications and API integrations for client projects.';
+            if (bullet2) bullet2.value = 'Contributed bug fixes and feature enhancements to public open-source Python repositories.';
+            if (bullet3) bullet3.value = 'Maintained 100% on-time milestone delivery with automated unit testing and documentation.';
+        }
+
+        [jobTitle, companyName, duration, location, bullet1, bullet2, bullet3].forEach(el => {
+            if (el) el.classList.add('is-valid');
+        });
+    };
+});
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} at {{ job.company }} - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back button -->
+    <div class="mb-3">
+        <a href="{% url 'job_recommendations' %}" class="btn btn-secondary-custom btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Recommended Jobs
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Job Header & Description -->
+        <div class="col-lg-8">
+            <div class="card-glass p-4 p-md-5 mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                    <div>
+                        <span class="badge bg-indigo-500 text-uppercase mb-2" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                            {{ job.company }}
+                        </span>
+                        <h1 class="h2 text-white fw-bold mb-2">{{ job.title }}</h1>
+                        <p class="text-secondary mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-info"></i> {{ job.location }} &bull; 
+                            <i class="fa-solid fa-sack-dollar me-1 text-success"></i> {{ job.salary }} &bull;
+                            <i class="fa-solid fa-business-time me-1 text-warning"></i> {{ job.employment_type }}
+                        </p>
+                    </div>
+                    {% if job.is_sample_data %}
+                    <span class="badge bg-dark border border-secondary text-secondary">
+                        <i class="fa-solid fa-database me-1"></i> Benchmark Sample Job Data
+                    </span>
+                    {% endif %}
+                </div>
+
+                <hr class="border-secondary border-opacity-25 my-4">
+
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-align-left me-2 text-indigo-400"></i> Job Overview & Requirements</h5>
+                <div class="text-secondary leading-relaxed mb-4" style="white-space: pre-line;">
+                    {{ job.description }}
+                </div>
+
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-list-check me-2 text-info"></i> Required Technical Skills</h5>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for skill in job.required_skills.all %}
+                        <span class="skill-badge"><i class="fa-solid fa-code me-1"></i> {{ skill.name }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if job.preferred_skills.exists %}
+                <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-star me-2 text-warning"></i> Preferred Skills</h5>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for skill in job.preferred_skills.all %}
+                        <span class="skill-badge" style="background: rgba(245, 158, 11, 0.15); color: #fde047; border-color: rgba(245, 158, 11, 0.3);">
+                            <i class="fa-solid fa-star me-1"></i> {{ skill.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-start mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    {% if user_application %}
+                        <div class="p-3 rounded-3 w-100" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <span class="text-success fw-bold me-2"><i class="fa-solid fa-circle-check me-1"></i> Application Submitted</span>
+                                    <span class="badge bg-success p-2">Status: {{ user_application.status }}</span>
+                                    <p class="text-secondary small mb-0 mt-1">Submitted on {{ user_application.applied_at|date:"M d, Y, h:i A" }}</p>
+                                </div>
+                                <a href="{% url 'my_applications' %}" class="btn btn-secondary-custom btn-sm">
+                                    <i class="fa-solid fa-list-check me-1"></i> View All Applications
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'job_apply' job.id %}" class="btn btn-primary-custom btn-lg">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Apply for Position
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Match Score Sidebar -->
+        <div class="col-lg-4">
+            <div class="card-glass p-4 sticky-top" style="top: 100px;">
+                <h5 class="text-white fw-bold text-center mb-3">AI Match Breakdown</h5>
+                
+                <div class="text-center p-4 rounded-3 mb-4" style="background: rgba(11, 15, 25, 0.7); border: 1px solid var(--border-color);">
+                    <div class="display-4 fw-extrabold {% if recommendation.match_score >= 80 %}text-success{% elif recommendation.match_score >= 60 %}text-info{% else %}text-warning{% endif %}">
+                        {{ recommendation.match_score }}%
+                    </div>
+                    <span class="text-secondary small fw-semibold">COMPATIBILITY MATCH</span>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-white fw-bold mb-2"><i class="fa-solid fa-brain me-1 text-indigo-400"></i> AI Match Analysis</h6>
+                    <p class="text-secondary small">{{ recommendation.explanation }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-success fw-bold mb-2"><i class="fa-solid fa-check me-1"></i> Skills You Possess ({{ recommendation.matched_skills|length }})</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for s in recommendation.matched_skills %}
+                            <span class="skill-badge skill-badge-existing">{{ s }}</span>
+                        {% empty %}
+                            <span class="text-secondary small">No matching skills detected.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-danger fw-bold mb-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> Missing Skills to Learn ({{ recommendation.missing_skills|length }})</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for s in recommendation.missing_skills %}
+                            <span class="skill-badge skill-badge-missing">{{ s }}</span>
+                        {% empty %}
+                            <span class="text-success small">No skill gaps! You match all requirements.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <a href="{% url 'roadmap' %}" class="btn btn-secondary-custom w-100 py-2">
+                    <i class="fa-solid fa-route me-1"></i> Generate Skill Roadmap
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

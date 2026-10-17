@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for {{ job.title }} at {{ job.company }} - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back button -->
+    <div class="mb-3">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-secondary-custom btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Job Details
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-glass p-4 p-md-5">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <span class="badge bg-indigo-500 text-uppercase mb-2" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                        {{ job.company }}
+                    </span>
+                    <h2 class="h3 text-white fw-bold mb-1">Apply for {{ job.title }}</h2>
+                    <p class="text-secondary small">
+                        <i class="fa-solid fa-location-dot me-1 text-info"></i> {{ job.location }} &bull;
+                        <i class="fa-solid fa-sack-dollar me-1 text-success"></i> {{ job.salary }} &bull;
+                        <i class="fa-solid fa-clock me-1 text-warning"></i> {{ job.employment_type }}
+                    </p>
+                </div>
+
+                <hr class="border-secondary border-opacity-25 mb-4">
+
+                <!-- Application Form -->
+                <form method="post" enctype="multipart/form-data" class="needs-validation">
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label class="form-label text-white fw-semibold small">Full Name <span class="text-danger">*</span></label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="col-md-6">
+                            <label class="form-label text-white fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="col-md-6">
+                            <label class="form-label text-white fw-semibold small">Phone Number <span class="text-danger">*</span></label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Experience Level -->
+                        <div class="col-md-6">
+                            <label class="form-label text-white fw-semibold small">Experience Level</label>
+                            {{ form.experience_years }}
+                            {% if form.experience_years.errors %}
+                                <div class="text-danger small mt-1">{{ form.experience_years.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Existing Resume Selection -->
+                        <div class="col-12">
+                            <label class="form-label text-white fw-semibold small">Select Uploaded Resume</label>
+                            {{ form.resume }}
+                            {% if form.resume.errors %}
+                                <div class="text-danger small mt-1">{{ form.resume.errors.0 }}</div>
+                            {% endif %}
+                            {% if latest_resume %}
+                                <div class="form-text text-secondary small">
+                                    <i class="fa-solid fa-file-pdf text-info me-1"></i> Latest uploaded resume auto-detected: <strong>{{ latest_resume.uploaded_at|date:"M d, Y" }}</strong>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Custom Resume File Upload -->
+                        <div class="col-12">
+                            <label class="form-label text-white fw-semibold small">Or Upload New Resume (PDF / DOCX)</label>
+                            {{ form.custom_resume_file }}
+                            {% if form.custom_resume_file.errors %}
+                                <div class="text-danger small mt-1">{{ form.custom_resume_file.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Cover Letter -->
+                        <div class="col-12">
+                            <label class="form-label text-white fw-semibold small">Cover Letter / Additional Notes</label>
+                            {{ form.cover_letter }}
+                            {% if form.cover_letter.errors %}
+                                <div class="text-danger small mt-1">{{ form.cover_letter.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex align-items-center justify-content-between mt-4 pt-3 border-top border-secondary border-opacity-25">
+                        <a href="{% url 'job_detail' job.id %}" class="btn btn-secondary-custom">
+                            <i class="fa-solid fa-xmark me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom px-4 py-2">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

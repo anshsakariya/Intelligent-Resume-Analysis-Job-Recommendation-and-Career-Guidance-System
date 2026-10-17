@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}My Job Applications - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Title -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h2 text-white fw-bold mb-1">
+                <i class="fa-solid fa-briefcase text-teal-400 me-2" style="color: #38bdf8;"></i> My Job Applications
+            </h1>
+            <p class="text-secondary mb-0">Track the status of all positions you have applied to.</p>
+        </div>
+        <div>
+            <a href="{% url 'job_recommendations' %}" class="btn btn-primary-custom btn-sm">
+                <i class="fa-solid fa-plus me-1"></i> Browse More Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Applications List -->
+    <div class="row g-4">
+        {% for app in applications %}
+        <div class="col-lg-6">
+            <div class="card-glass p-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-indigo-500 text-uppercase small mb-2" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">
+                            {{ app.job.company }}
+                        </span>
+                        <h3 class="h5 text-white fw-bold mb-1">{{ app.job.title }}</h3>
+                        <p class="text-secondary small mb-0">
+                            <i class="fa-solid fa-location-dot me-1 text-info"></i> {{ app.job.location }} &bull;
+                            <i class="fa-solid fa-sack-dollar me-1 text-success"></i> {{ app.job.salary }}
+                        </p>
+                    </div>
+                    <div>
+                        {% if app.status == 'Submitted' %}
+                            <span class="badge bg-info text-dark p-2"><i class="fa-solid fa-paper-plane me-1"></i> Submitted</span>
+                        {% elif app.status == 'Under Review' %}
+                            <span class="badge bg-warning text-dark p-2"><i class="fa-solid fa-eye me-1"></i> Under Review</span>
+                        {% elif app.status == 'Shortlisted' %}
+                            <span class="badge bg-primary text-white p-2"><i class="fa-solid fa-star me-1"></i> Shortlisted</span>
+                        {% elif app.status == 'Interviewing' %}
+                            <span class="badge bg-indigo-500 text-white p-2" style="background: #6366f1;"><i class="fa-solid fa-comments me-1"></i> Interviewing</span>
+                        {% elif app.status == 'Accepted' %}
+                            <span class="badge bg-success text-white p-2"><i class="fa-solid fa-circle-check me-1"></i> Accepted</span>
+                        {% elif app.status == 'Rejected' %}
+                            <span class="badge bg-danger text-white p-2"><i class="fa-solid fa-circle-xmark me-1"></i> Rejected</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if app.cover_letter %}
+                <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    <i class="fa-solid fa-quote-left me-1 text-secondary opacity-50"></i> {{ app.cover_letter }}
+                </p>
+                {% endif %}
+
+                <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top border-secondary border-opacity-25">
+                    <span class="text-secondary small">
+                        <i class="fa-solid fa-calendar-day me-1 text-teal-400"></i> Applied on {{ app.applied_at|date:"M d, Y, h:i A" }}
+                    </span>
+                    <a href="{% url 'job_detail' app.job.id %}" class="btn btn-secondary-custom btn-sm">
+                        <i class="fa-solid fa-eye me-1"></i> View Job
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="card-glass p-5">
+                <i class="fa-solid fa-paper-plane text-secondary fa-3x mb-3"></i>
+                <h4 class="text-white">No Job Applications Yet</h4>
+                <p class="text-secondary">You haven't submitted any job applications. Explore job recommendations and apply to positions matching your profile.</p>
+                <a href="{% url 'job_recommendations' %}" class="btn btn-primary-custom mt-2">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> Explore Recommended Jobs
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

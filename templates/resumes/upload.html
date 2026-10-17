@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Resume - AI Career Mentor{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-glass p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; background: rgba(99, 102, 241, 0.15); color: #818cf8;">
+                        <i class="fa-solid fa-cloud-arrow-up fa-2xl"></i>
+                    </div>
+                    <h2 class="h3 text-white fw-bold">Upload PDF Resume</h2>
+                    <p class="text-secondary">Upload your PDF resume for instant NLP text extraction, skill detection, and ATS scoring.</p>
+                </div>
+
+
+                <form method="post" enctype="multipart/form-data" action="{% url 'upload_resume' %}">
+                    {% csrf_token %}
+
+                    <div class="mb-4 text-center p-4 border border-dashed rounded-3" style="border-color: rgba(99, 102, 241, 0.4) !important; background: rgba(11, 15, 25, 0.4);">
+                        <i class="fa-regular fa-file-pdf text-indigo-400 fa-3x mb-3" style="color: #818cf8;"></i>
+                        <h5 class="text-white mb-2">Select a PDF file from your computer</h5>
+                        <p class="text-secondary small mb-3">Maximum file size: 4MB. Must be in .pdf format.</p>
+                        
+                        <div class="w-75 mx-auto">
+                            {{ form.file }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" id="uploadBtn" class="btn btn-primary-custom btn-lg px-5" onclick="this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin me-2\'></i> Extracting & Analyzing...';">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2"></i> Upload & Run AI Analysis
+                        </button>
+                    </div>
+                </form>
+
+                {% if latest_resume %}
+                <div class="mt-5 pt-4 border-top border-secondary border-opacity-25">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="text-white mb-1"><i class="fa-solid fa-clock-history me-2 text-indigo-400"></i> Active Upload</h5>
+                            <p class="text-secondary small mb-0">Uploaded on {{ latest_resume.uploaded_at|date:"M d, Y H:i" }} | ATS Score: <span class="badge bg-indigo-500">{{ latest_resume.ats_score }}/100</span></p>
+                        </div>
+                        <a href="{% url 'resume_analysis' %}" class="btn btn-secondary-custom btn-sm">
+                            <i class="fa-solid fa-chart-pie me-1"></i> View Full Report
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
