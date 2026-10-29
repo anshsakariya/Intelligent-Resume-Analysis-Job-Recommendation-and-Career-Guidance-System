@@ -24,7 +24,7 @@ class Job(models.Model):
     preferred_skills = models.ManyToManyField(Skill, related_name='preferred_in_jobs', blank=True)
     experience_level = models.CharField(max_length=50, choices=EXPERIENCE_CHOICES, default='Entry Level')
     location = models.CharField(max_length=100, default='Remote / Hybrid')
-    salary = models.CharField(max_length=100, default='$80,000 - $110,000 / year')
+    salary = models.CharField(max_length=100, default='Rs. 6,00,000 - 9,00,000 / year')
     employment_type = models.CharField(max_length=50, choices=EMPLOYMENT_CHOICES, default='Full-Time')
     posted_date = models.DateTimeField(auto_now_add=True)
     application_url = models.URLField(default='https://example.com/careers')

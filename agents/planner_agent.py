@@ -19,52 +19,104 @@ class PlannerAgent:
         if self.api_key:
             genai.configure(api_key=self.api_key)
 
+    # ─────────────────────────────────────────────────────────────
+    # Comprehensive role → required-skills mapping
+    # Only skills directly relevant to the role are listed.
+    # ─────────────────────────────────────────────────────────────
+    ROLE_SKILL_MAP = {
+        'Python Developer': [
+            'Python', 'Django', 'Flask', 'FastAPI', 'SQL', 'PostgreSQL',
+            'REST API', 'Git', 'Docker', 'Redis', 'Celery', 'Testing',
+            'Linux', 'Data Structures', 'OOP',
+        ],
+        'Django Developer': [
+            'Python', 'Django', 'Django REST Framework', 'REST API',
+            'PostgreSQL', 'Redis', 'Celery', 'Docker', 'Git',
+            'HTML', 'CSS', 'JavaScript', 'Testing', 'Linux',
+        ],
+        'Full Stack Developer': [
+            'JavaScript', 'React', 'Node.js', 'Python', 'Django',
+            'HTML', 'CSS', 'PostgreSQL', 'MongoDB', 'Git', 'REST API',
+            'TypeScript', 'Docker', 'Testing',
+        ],
+        'Backend Developer': [
+            'Python', 'Django', 'Flask', 'FastAPI', 'REST API', 'SQL',
+            'PostgreSQL', 'Redis', 'Docker', 'Git', 'Linux',
+            'Celery', 'Testing', 'Microservices',
+        ],
+        'Data Analyst': [
+            'Python', 'SQL', 'Pandas', 'NumPy', 'Matplotlib',
+            'Data Visualization', 'Excel', 'Power BI', 'Statistics',
+            'PostgreSQL', 'Git', 'Data Cleaning',
+        ],
+        'Data Scientist': [
+            'Python', 'Machine Learning', 'Pandas', 'NumPy',
+            'Scikit-learn', 'Statistics', 'SQL', 'Data Visualization',
+            'Jupyter Notebook', 'Feature Engineering', 'Deep Learning',
+            'Git',
+        ],
+        'Machine Learning Engineer': [
+            'Python', 'Machine Learning', 'Deep Learning', 'PyTorch',
+            'TensorFlow', 'Scikit-learn', 'MLOps', 'Docker', 'Git',
+            'SQL', 'Feature Engineering', 'Model Deployment',
+            'Data Pipelines',
+        ],
+        'AI Engineer': [
+            'Python', 'Machine Learning', 'Deep Learning', 'NLP',
+            'Generative AI', 'PyTorch', 'TensorFlow', 'LangChain',
+            'REST API', 'Docker', 'Git', 'Prompt Engineering',
+        ],
+        'Software Developer': [
+            'Python', 'SQL', 'Git', 'GitHub', 'REST API', 'Docker',
+            'Testing', 'Linux', 'Data Structures', 'OOP',
+            'Design Patterns', 'CI/CD',
+        ],
+    }
+
     def identify_skill_gap(self, user):
         """
         Calculates existing skills vs missing skills for user's target career role.
+        Strictly restricts both existing and missing skills to the user's chosen profile/domain,
+        ensuring that out-of-domain skills (e.g. AI/Data skills on a Python Developer profile)
+        and redundant duplicates (Git vs GIT, NumPy vs Numpy) do not clutter the roadmap.
         """
         profile = getattr(user, 'profile', None)
         target_role = profile.target_role if profile else 'Python Developer'
 
-        # Extracted user skills
-        user_skills = UserSkill.objects.filter(user=user, is_extracted=True).select_related('skill')
-        existing_skills = set(us.skill.name for us in user_skills)
+        # Domain standard skills for target role
+        role_skills_list = self.ROLE_SKILL_MAP.get(target_role, self.ROLE_SKILL_MAP['Python Developer'])
+        # Map lowercase to standard canonical name
+        role_skill_canon = {s.lower(): s for s in role_skills_list}
 
-        # Target career required skills from database jobs
-        relevant_jobs = Job.objects.filter(title__icontains=target_role)
-        required_skills = set()
-        if relevant_jobs.exists():
-            for job in relevant_jobs:
-                for skill in job.required_skills.all():
-                    required_skills.add(skill.name)
-                for skill in job.preferred_skills.all():
-                    required_skills.add(skill.name)
-        
-        # Standard fallback target skill sets if DB jobs not enough
-        role_skill_defaults = {
-            'Python Developer': ['Python', 'Django', 'SQL', 'PostgreSQL', 'REST API', 'Git', 'Docker', 'Redis', 'Testing'],
-            'Django Developer': ['Python', 'Django', 'REST API', 'PostgreSQL', 'Redis', 'Celery', 'Docker', 'Git', 'HTML', 'CSS'],
-            'Full Stack Developer': ['JavaScript', 'React', 'Python', 'Django', 'HTML', 'CSS', 'PostgreSQL', 'Git', 'REST API'],
-            'Data Analyst': ['Python', 'SQL', 'Pandas', 'NumPy', 'Data Science', 'PostgreSQL', 'Git'],
-            'Data Scientist': ['Python', 'Data Science', 'Machine Learning', 'Pandas', 'NumPy', 'Scikit-learn', 'SQL', 'PyTorch'],
-            'Machine Learning Engineer': ['Python', 'Machine Learning', 'PyTorch', 'TensorFlow', 'Scikit-learn', 'Docker', 'AWS', 'Git'],
-            'AI Engineer': ['Python', 'Generative AI', 'Machine Learning', 'PyTorch', 'NLTK', 'REST API', 'Docker', 'AWS'],
-            'Backend Developer': ['Python', 'REST API', 'SQL', 'PostgreSQL', 'Redis', 'Docker', 'Git', 'Linux'],
-            'Software Developer': ['Python', 'SQL', 'Git', 'GitHub', 'REST API', 'Docker', 'Testing', 'Linux'],
-        }
+        # Extracted user skills from resume
+        raw_user_skills = UserSkill.objects.filter(user=user, is_extracted=True).select_related('skill')
 
-        if not required_skills:
-            defaults = role_skill_defaults.get(target_role, role_skill_defaults['Python Developer'])
-            required_skills = set(defaults)
+        # Strictly filter mastered skills: only include skills that belong to the target domain
+        mastered_domain_skills = set()
+        user_skills_lower = set()
+        for us in raw_user_skills:
+            name_lower = us.skill.name.strip().lower()
+            user_skills_lower.add(name_lower)
+            if name_lower in role_skill_canon:
+                mastered_domain_skills.add(role_skill_canon[name_lower])
 
-        missing_skills = list(required_skills.difference(existing_skills))
+        # Missing skills: domain skills that user doesn't have yet
+        missing_domain_skills = [
+            s for s in role_skills_list
+            if s.lower() not in user_skills_lower
+        ]
 
-        # Save missing skills as target skills in UserSkill model (batch optimized)
-        if missing_skills:
+        # Sync missing target skills in UserSkill model
+        if missing_domain_skills:
+            # Clean up out-of-domain target skills previously added
+            UserSkill.objects.filter(user=user, is_target=True).exclude(
+                skill__name__in=role_skills_list
+            ).delete()
+
             existing_target_names = set(
                 UserSkill.objects.filter(user=user, is_target=True).values_list('skill__name', flat=True)
             )
-            to_add = [s for s in missing_skills if s not in existing_target_names]
+            to_add = [s for s in missing_domain_skills if s not in existing_target_names]
             if to_add:
                 skills_dict = {s.name: s for s in Skill.objects.filter(name__in=to_add)}
                 for s_name in to_add:
@@ -76,8 +128,8 @@ class PlannerAgent:
                 ], ignore_conflicts=True)
 
         return {
-            'existing_skills': list(existing_skills),
-            'missing_skills': missing_skills,
+            'existing_skills': sorted(list(mastered_domain_skills)),
+            'missing_skills': missing_domain_skills,
             'target_role': target_role
         }
 
@@ -110,6 +162,11 @@ class PlannerAgent:
                 - Missing Target Skills to Master: {', '.join(missing_skills) if missing_skills else 'Advanced concepts'}
                 - Commitment: {hours_per_day} hours/day, {days_per_week} days/week.
 
+                IMPORTANT: Only include skills and topics that are DIRECTLY relevant to the "{target_role}" role.
+                Do NOT include unrelated skills (e.g., do not suggest AWS/Cloud for a Python Developer,
+                do not suggest frontend frameworks for a Data Analyst, etc.).
+                Focus exclusively on the missing skills listed above and core competencies for {target_role}.
+
                 Respond strictly with valid JSON array containing objects with these keys:
                 "phase_name", "title", "description", "priority", "estimated_hours".
                 Example format:
@@ -139,27 +196,56 @@ class PlannerAgent:
             except Exception as e:
                 print(f"Gemini Roadmap API fallback activated due to: {e}")
 
-        # Rule-Based Fallback Synthesizer
+        # Rule-Based Fallback Synthesizer — uses role-specific skills only
+        role_defaults = self.ROLE_SKILL_MAP.get(target_role, self.ROLE_SKILL_MAP['Python Developer'])
+        # Pick top missing skills for focused roadmap modules
+        priority_missing = missing_skills[:5] if missing_skills else role_defaults[:5]
+        secondary_missing = missing_skills[5:] if len(missing_skills) > 5 else role_defaults[5:8]
+
         fallback_phases = [
             {
-                'phase': 'Month 1: Core Fundamentals & Missing Basics',
+                'phase': f'Month 1: Core {target_role} Fundamentals',
                 'items': [
-                    ('Core Language Mastery', f"Deep dive into fundamental concepts for {target_role}. Focus on data structures, OOP, and syntax.", 'High Priority', 12),
-                    ('Version Control & Workflow', "Master Git branching, commits, GitHub pull requests, and open-source collaboration best practices.", 'Medium Priority', 8),
+                    (
+                        f'Core {target_role} Language & Concepts',
+                        f"Deep dive into fundamental concepts for {target_role}. Focus on mastering: {', '.join(priority_missing[:3])}.",
+                        'High Priority', 12
+                    ),
+                    (
+                        'Version Control & Development Workflow',
+                        "Master Git branching, commits, GitHub pull requests, and collaborative development best practices.",
+                        'Medium Priority', 8
+                    ),
                 ]
             },
             {
-                'phase': 'Month 2: Advanced Frameworks & Databases',
+                'phase': f'Month 2: Advanced {target_role} Skills',
                 'items': [
-                    ('Database Design & Queries', "Learn SQL schema design, relationships, indexing, and PostgreSQL optimization.", 'High Priority', 15),
-                    ('Framework & API Mastery', f"Build backend APIs and modular applications focusing on missing skills: {', '.join(missing_skills[:3]) if missing_skills else 'REST APIs'}.", 'High Priority', 20),
+                    (
+                        f'{target_role} Specialized Skills',
+                        f"Build expertise in role-specific skills: {', '.join(priority_missing[3:] or secondary_missing[:3])}.",
+                        'High Priority', 15
+                    ),
+                    (
+                        f'Practical {target_role} Applications',
+                        f"Build real-world applications focusing on missing skills: {', '.join(secondary_missing[:3]) if secondary_missing else ', '.join(priority_missing[:3])}.",
+                        'High Priority', 20
+                    ),
                 ]
             },
             {
-                'phase': 'Month 3: Portfolio Projects & Interview Prep',
+                'phase': f'Month 3: {target_role} Portfolio & Interview Prep',
                 'items': [
-                    ('Cap-Stone Capable Project', f"Build and deploy a full-stack, production-ready {target_role} project with live deployment.", 'High Priority', 25),
-                    ('Technical Interview Preparation', "Practice System Design, Data Structures & Algorithms, and mock technical interview questions.", 'Medium Priority', 15),
+                    (
+                        f'Cap-Stone {target_role} Project',
+                        f"Build and deploy a full, production-ready {target_role} project showcasing all learned skills.",
+                        'High Priority', 25
+                    ),
+                    (
+                        f'{target_role} Interview Preparation',
+                        f"Practice {target_role}-specific interview questions, system design concepts, and coding challenges.",
+                        'Medium Priority', 15
+                    ),
                 ]
             }
         ]

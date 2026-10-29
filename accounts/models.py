@@ -62,7 +62,7 @@ class Profile(models.Model):
     key_skills = models.CharField(max_length=255, blank=True, help_text="e.g. Python, Django, REST API, React, SQL")
     preferred_work_mode = models.CharField(max_length=50, choices=WORK_MODE_CHOICES, default='Remote')
     notice_period = models.CharField(max_length=50, choices=NOTICE_PERIOD_CHOICES, default='Immediate')
-    expected_salary = models.CharField(max_length=50, blank=True, help_text="e.g. $80,000 / yr or ₹10 LPA")
+    expected_salary = models.CharField(max_length=50, blank=True, help_text="e.g. ₹6,00,000 - ₹10,00,000 / yr or 10 LPA")
     career_goal = models.TextField(blank=True, default='Looking to build a successful career in software development and AI.')
 
     # Profile Picture

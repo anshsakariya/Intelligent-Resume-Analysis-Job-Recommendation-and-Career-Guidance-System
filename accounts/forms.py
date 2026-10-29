@@ -160,7 +160,7 @@ class UserProfileForm(forms.ModelForm):
             'key_skills': forms.TextInput(attrs={'class': 'form-control form-control-custom', 'placeholder': 'Python, Django, REST API, React, SQL'}),
             'preferred_work_mode': forms.Select(attrs={'class': 'form-select form-select-custom'}),
             'notice_period': forms.Select(attrs={'class': 'form-select form-select-custom'}),
-            'expected_salary': forms.TextInput(attrs={'class': 'form-control form-control-custom', 'placeholder': '$80,000 / yr or ₹10 LPA'}),
+            'expected_salary': forms.TextInput(attrs={'class': 'form-control form-control-custom', 'placeholder': '₹6,00,000 - ₹10,00,000 / yr or 8 LPA'}),
             'career_goal': forms.Textarea(attrs={'class': 'form-control form-control-custom', 'rows': 3, 'placeholder': 'Describe your primary career objective...'}),
         }
 

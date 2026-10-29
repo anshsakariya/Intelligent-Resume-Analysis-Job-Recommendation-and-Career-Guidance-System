@@ -160,26 +160,44 @@ def recommend_jobs_for_user(user, force_refresh=False):
             else:
                 exp_factor = 0.85
 
+        # Role Alignment Boost
+        # Ensure jobs matching the candidate's target career role receive decisive priority
+        role_alignment_boost = 0
+        if target_role:
+            target_role_lower = target_role.lower()
+            job_title_lower = job.title.lower()
+            if target_role_lower in job_title_lower or job_title_lower in target_role_lower:
+                role_alignment_boost = 35
+            else:
+                # Partial match (e.g., 'python' in both 'Python Developer' and 'Junior Python Developer')
+                target_words = set(w for w in target_role_lower.split() if len(w) > 2)
+                job_words = set(w for w in job_title_lower.split() if len(w) > 2)
+                common_words = target_words.intersection(job_words)
+                if common_words:
+                    role_alignment_boost = 25
+
         # Cosine Similarity Score
         tfidf_sim = float(similarity_scores[idx])
 
         # Combined Weighted Score (0 to 100)
         if matched_set:
             final_score = int(
-                (skill_match_ratio * 55) +
-                (tfidf_sim * 30) +
-                (exp_factor * 15)
+                (skill_match_ratio * 40) +
+                (tfidf_sim * 20) +
+                (exp_factor * 10) +
+                role_alignment_boost
             )
             final_score = min(98, max(35, final_score))
         elif tfidf_sim > 0.05:
             final_score = int(
-                (tfidf_sim * 60) +
-                (exp_factor * 25)
+                (tfidf_sim * 40) +
+                (exp_factor * 15) +
+                role_alignment_boost
             )
-            final_score = min(85, max(30, final_score))
+            final_score = min(88, max(30, final_score))
         else:
-            final_score = int(25 + (exp_factor * 10))
-            final_score = min(50, max(25, final_score))
+            final_score = int(25 + (exp_factor * 10) + (role_alignment_boost // 2))
+            final_score = min(60, max(25, final_score))
 
         # Generate Explanation
         explanation = f"{final_score}% match score calculated using ML Similarity & Skill matching. "

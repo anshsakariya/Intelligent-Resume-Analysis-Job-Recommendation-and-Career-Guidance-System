@@ -31,7 +31,12 @@
                 <div class="position-relative d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 160px; height: 160px;">
                     <svg width="160" height="160" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="10"/>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#gradientScore)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="{{ 314|add:'-3.14'|stringformat:'f' }}" style="stroke-dashoffset: calc(314 - (314 * {{ analysis.ats_score }}) / 100); transition: stroke-dashoffset 1s ease;"/>
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#gradientScore)" stroke-width="10"
+                            stroke-linecap="round"
+                            stroke-dasharray="314"
+                            stroke-dashoffset="314"
+                            transform="rotate(-90 60 60)"
+                            id="scoreCircle"/>
                         <defs>
                             <linearGradient id="gradientScore" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" stop-color="#6366f1" />
@@ -44,6 +49,19 @@
                         <span class="text-secondary d-block fs-6">/ 100</span>
                     </div>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var circle = document.getElementById('scoreCircle');
+                        if (circle) {
+                            var score = {{ analysis.ats_score|default:0 }};
+                            var offset = 314 - (314 * score / 100);
+                            setTimeout(function() {
+                                circle.style.transition = 'stroke-dashoffset 1s ease';
+                                circle.style.strokeDashoffset = offset;
+                            }, 100);
+                        }
+                    });
+                </script>
 
                 <div class="mt-2">
                     {% if analysis.ats_score >= 80 %}
