@@ -1,0 +1,5 @@
+python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+python manage.py migrate
+python utils/seed_db.py
+python manage.py runserver
